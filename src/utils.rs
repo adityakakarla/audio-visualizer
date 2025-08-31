@@ -10,8 +10,8 @@ pub fn get_volume(data: &[f32]) -> f32 {
     total_sum / total_count
 }
 
-pub fn get_output_size(terminal_size: i32, volume: f32) -> i32 {
-    (volume * (terminal_size as f32)) as i32
+pub fn get_output_size(terminal_size: f32, volume: f32) -> i32 {
+    (volume * terminal_size) as i32
 }
 
 pub fn get_output(terminal_size: i32, output_size: i32) -> String {
