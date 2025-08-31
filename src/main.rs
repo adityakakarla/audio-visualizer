@@ -16,7 +16,6 @@ fn main() {
     let config = supported_config.config();
 
     let (terminal_size, _) = term_size::dimensions().expect("Could not get dimensions");
-    let terminal_size_i32 = terminal_size as i32;
     let terminal_size_f32 = terminal_size as f32;
 
     let stream = match supported_config.sample_format() {
@@ -25,7 +24,7 @@ fn main() {
             move |data: &[f32], _: &cpal::InputCallbackInfo| {
                 let volume = get_volume(&data);
                 let output_size = get_output_size(terminal_size_f32, volume);
-                println!("{}", get_output(terminal_size_i32, output_size))
+                println!("{}", "█".repeat(output_size as usize));
             },
             move |err| {
                 eprintln!("Error: {:?}", err);
