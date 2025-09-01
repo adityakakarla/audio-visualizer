@@ -1,6 +1,6 @@
 mod utils;
 
-use crate::utils::{get_output, get_output_size, get_volume};
+use crate::utils::{generate_color, get_output_size, get_volume};
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 
 fn main() {
@@ -17,6 +17,7 @@ fn main() {
 
     let (terminal_size, _) = term_size::dimensions().expect("Could not get dimensions");
     let terminal_size_f32 = terminal_size as f32;
+    let color = generate_color();
 
     let stream = match supported_config.sample_format() {
         cpal::SampleFormat::F32 => device.build_input_stream(
@@ -24,6 +25,7 @@ fn main() {
             move |data: &[f32], _: &cpal::InputCallbackInfo| {
                 let volume = get_volume(&data);
                 let output_size = get_output_size(terminal_size_f32, volume);
+                print!("{}", color);
                 println!("{}", "█".repeat(output_size as usize));
             },
             move |err| {
