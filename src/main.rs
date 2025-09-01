@@ -1,11 +1,49 @@
 mod utils;
 
 use crate::utils::{generate_color, get_output_size, get_volume};
+use cpal::Device;
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
+use std::{io, panic};
 
 fn main() {
     let host = cpal::default_host();
-    let device = host.default_input_device().expect("No input device found");
+    let devices: Vec<Device> = host
+        .input_devices()
+        .expect("Failed to get devices")
+        .collect();
+    let device;
+
+    match devices.len() {
+        0 => panic!("No devices found"),
+        1 => device = &devices[0],
+        _ => {
+            println!("\nMultiple input devices were detected");
+
+            let mut input_string = String::new();
+
+            for (idx, potential_device) in devices.iter().enumerate() {
+                println!(
+                    "{}. {}",
+                    idx + 1,
+                    potential_device.name().expect("Could not get name")
+                );
+            }
+
+            println!("\nEnter the number of your desired device below: ");
+            io::stdin()
+                .read_line(&mut input_string)
+                .expect("Failed to read line");
+
+            let input_number: usize = input_string.trim().parse().expect("Could not parse input");
+
+            if (input_number > devices.len()) | (input_number == 0) {
+                panic!("You entered an invalid number");
+            }
+
+            device = &devices[input_number - 1];
+        }
+    }
+
     let mut supported_configs_range = device
         .supported_input_configs()
         .expect("Error while querying configs");
