@@ -1,3 +1,4 @@
+use cpal::{Device, traits::DeviceTrait};
 use rand::Rng;
 
 const COLORS: [&str; 12] = [
@@ -35,4 +36,16 @@ pub fn generate_color() -> &'static str {
     let mut rng = rand::rng();
     let index = rng.random_range(0..COLORS.len());
     COLORS[index]
+}
+
+pub fn print_devices(devices: &Vec<Device>) {
+    println!();
+    for (idx, device) in devices.iter().enumerate() {
+        println!(
+            "{}. {}",
+            idx + 1,
+            device.name().expect("Could not get device name")
+        );
+    }
+    println!()
 }
