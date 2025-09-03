@@ -19,7 +19,7 @@ fn main() {
         _ => {
             println!("\nMultiple input devices were detected");
 
-            let mut input_string = String::new();
+            let mut input_device_string = String::new();
 
             for (idx, potential_device) in devices.iter().enumerate() {
                 println!(
@@ -31,10 +31,13 @@ fn main() {
 
             println!("\nEnter the number of your desired device below: ");
             io::stdin()
-                .read_line(&mut input_string)
-                .expect("Failed to read line");
+                .read_line(&mut input_device_string)
+                .expect("Failed to read desired input device");
 
-            let input_number: usize = input_string.trim().parse().expect("Could not parse input");
+            let input_number: usize = input_device_string
+                .trim()
+                .parse()
+                .expect("Could not parse input");
 
             if (input_number > devices.len()) | (input_number == 0) {
                 panic!("You entered an invalid number");
@@ -57,14 +60,48 @@ fn main() {
     let terminal_size_f32 = terminal_size as f32;
     let color = generate_color();
 
+    let mut max_sample_count_string = String::new();
+    let default_samples_per_bar = 5;
+    let max_samples_per_bar;
+    let mut sample_count = 0;
+    let mut volume_sum = 0.0;
+
+    println!(
+        "\nEnter how many samples you would like per bar (default = {})",
+        default_samples_per_bar
+    );
+    io::stdin()
+        .read_line(&mut max_sample_count_string)
+        .expect("Failed to read desired samples per bar rate");
+
+    match max_sample_count_string.trim().parse() {
+        Ok(num) => {
+            max_samples_per_bar = num;
+        }
+        Err(_) => {
+            println!(
+                "Could not parse desired samples per bar, using {} by default.",
+                default_samples_per_bar
+            );
+            max_samples_per_bar = default_samples_per_bar;
+        }
+    }
+
     let stream = match supported_config.sample_format() {
         cpal::SampleFormat::F32 => device.build_input_stream(
             &config,
             move |data: &[f32], _: &cpal::InputCallbackInfo| {
-                let volume = get_volume(&data);
-                let output_size = get_output_size(terminal_size_f32, volume);
-                print!("{}", color);
-                println!("{}", "█".repeat(output_size as usize));
+                sample_count += 1;
+                volume_sum += get_volume(&data);
+
+                if sample_count == max_samples_per_bar {
+                    let average_volume = volume_sum / (sample_count as f32);
+                    let output_size = get_output_size(terminal_size_f32, average_volume);
+                    print!("{}", color);
+                    println!("{}", "█".repeat(output_size as usize));
+                    sample_count = 0;
+                    volume_sum = 0.0;
+                }
             },
             move |err| {
                 eprintln!("Error: {:?}", err);
