@@ -55,11 +55,9 @@ fn main() {
             match devices.len() {
                 0 => panic!("No devices were found"),
                 _ => {
-                    println!("\nMultiple input devices were detected");
-
                     if (device > devices.len()) | (device == 0) {
                         panic!(
-                            "You entered an invalid device number. Check devices by using the view-devices subcommand."
+                            "You chose an invalid device number. See available devices by using the view-devices subcommand."
                         );
                     }
 
