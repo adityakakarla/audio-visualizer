@@ -24,6 +24,9 @@ enum Commands {
 
         #[arg(short = 's', long, default_value_t = 10)]
         seconds: u64,
+
+        #[arg(short = 'f', long, default_value_t = false)]
+        run_forever: bool,
     },
     ViewDevices,
 }
@@ -44,6 +47,7 @@ fn main() {
             device,
             samples_per_bar,
             seconds,
+            run_forever,
         } => {
             let host = cpal::default_host();
             let devices: Vec<Device> = host
@@ -116,7 +120,13 @@ fn main() {
             .expect("Failed to build stream");
 
             stream.play().expect("Failed to read stream");
-            std::thread::sleep(std::time::Duration::from_secs(seconds));
+            if run_forever {
+                loop {
+                    std::thread::sleep(std::time::Duration::from_secs(10));
+                }
+            } else {
+                std::thread::sleep(std::time::Duration::from_secs(seconds));
+            }
         }
     }
 }
